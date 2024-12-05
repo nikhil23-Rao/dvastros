@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.Design.Serialization;
 using System.IO;
 
@@ -76,7 +77,7 @@ class Antenna {
     bool[] inRange;
     float[] linkBudget;
 
-    public Antenna Create(int index, int range, int dataSize) {
+    public Antenna Create(int index, int range, int dataSize, string[,] data) {
         Antenna a = new Antenna();
         a.dataIndex = index;
         a.dataRange = range;
@@ -89,6 +90,9 @@ class Antenna {
             a.diameter = 12;
         else
             a.diameter = -1;
+
+        Range(data);
+        LinkBudget(data, a);
 
         return a;
     }
@@ -107,5 +111,26 @@ class Antenna {
             linkBudget[i] = (float)((Math.Pow(10, 10+9-19.43+10*Math.Log10(0.55*Math.Pow(3.14*a.diameter/0.136363636,2)-20*Math.Log10(4000*3.14*float.Parse(data[i,a.dataRange])/0.136363636)+228.6-10*Math.Log10(22))))/1000);
         }
 
+    }
+
+    public static Antenna[] Priority(Antenna a, Antenna b, Antenna c, Antenna d, int index) {
+        Antenna[] priority = new Antenna[4];
+        priority[0] = a;
+        priority[1] = b;
+        priority[2] = c;
+        priority [3] = d;
+
+        Antenna storage;
+        for(int i=0; i<3; i++) {
+            for(int j=0; j<3-i; j++) {
+                if(priority[j].linkBudget[index]<priority[j+1].linkBudget[index]) {
+                    storage = priority[j];
+                    priority[j] = priority[j+1];
+                    priority[j+1] = storage;
+                }
+            }
+        }
+
+        return priority;
     }
 }

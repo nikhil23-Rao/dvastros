@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/mooncyli/projects/NASA ADC/NASA ADC/NASA ADC.csproj": {}
+    "/Users/mooncyli/Desktop/dvastros/NASA ADC/NASA ADC/NASA ADC.csproj": {}
   },
   "projects": {
-    "/Users/mooncyli/projects/NASA ADC/NASA ADC/NASA ADC.csproj": {
+    "/Users/mooncyli/Desktop/dvastros/NASA ADC/NASA ADC/NASA ADC.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/mooncyli/projects/NASA ADC/NASA ADC/NASA ADC.csproj",
+        "projectUniqueName": "/Users/mooncyli/Desktop/dvastros/NASA ADC/NASA ADC/NASA ADC.csproj",
         "projectName": "NASA ADC",
-        "projectPath": "/Users/mooncyli/projects/NASA ADC/NASA ADC/NASA ADC.csproj",
+        "projectPath": "/Users/mooncyli/Desktop/dvastros/NASA ADC/NASA ADC/NASA ADC.csproj",
         "packagesPath": "/Users/mooncyli/.nuget/packages/",
-        "outputPath": "/Users/mooncyli/projects/NASA ADC/NASA ADC/obj/",
+        "outputPath": "/Users/mooncyli/Desktop/dvastros/NASA ADC/NASA ADC/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/mooncyli/.nuget/NuGet/NuGet.Config"
