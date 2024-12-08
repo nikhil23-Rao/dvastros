@@ -12,11 +12,18 @@ class Program {
         Antenna c = Antenna.Create(Globals.DS34, Globals.DS34_RANGE, data.GetLength(0), data);
         Antenna d = Antenna.Create(Globals.DS54, Globals.DS54_RANGE, data.GetLength(0), data);
 
-        Antenna.PrintFloat(a.linkBudget);
-        // for(int i=0;i<data.Length;i++) {
-        // //     Antenna.PrintPriority(Antenna.Priority(a, b, c, d, i));
-        //     Console.WriteLine(data[i, Globals.WPSA_RANGE]);
-        // }
+        //Antenna.PrintFloat(a.linkBudget);
+        for(int i=0;i<data.Length;i++) {
+            if(Antenna.Priority(a, b, c, d, i)==null) {
+                Console.Write(""+i+" ");
+                Console.WriteLine("No anntenna available");
+            } else {
+                Console.Write(""+i+" ");
+                Antenna.PrintPriority(Antenna.Priority(a, b, c, d, i));
+                Console.WriteLine();
+            }
+            //Console.WriteLine(data[i, Globals.WPSA_RANGE]);
+        }
         //Data.PrintData(data);
         
     }
@@ -134,24 +141,28 @@ class Antenna {
     }
 
     public static Antenna[] Priority(Antenna a, Antenna b, Antenna c, Antenna d, int index) {
-        Antenna[] priority = new Antenna[4];
-        priority[0] = a;
-        priority[1] = b;
-        priority[2] = c;
-        priority [3] = d;
+        Antenna[] arr = new Antenna[4];
+        arr[0] = a;
+        arr[1] = b;
+        arr[2] = c;
+        arr [3] = d;
 
         Antenna storage;
-        for(int i=0; i<3; i++) {
-            for(int j=0; j<3-i; j++) {
-                if(priority[j].linkBudget[index]<priority[j+1].linkBudget[index]) {
-                    storage = priority[j];
-                    priority[j] = priority[j+1];
-                    priority[j+1] = storage;
+        if(a.inRange[index] || b.inRange[index] || c.inRange[index] || d.inRange[index]) {
+            for(int i=0; i<3; i++) {
+                for(int j=0; j<3-i; j++) {
+                    if(arr[j].linkBudget[index]<arr[j+1].linkBudget[index]) {
+                        storage = arr[j];
+                        arr[j] = arr[j+1];
+                        arr[j+1] = storage;
+                    }
                 }
             }
+        } else {
+            return null;
         }
 
-        return priority;
+        return arr;
     }
 
     public static void PrintBool(bool[] arr) {
@@ -168,7 +179,7 @@ class Antenna {
 
     public static void PrintPriority(Antenna[] arr) {
         for(int i=0; i<arr.Length; i++) {
-            Console.WriteLine(arr[i].dataIndex);
+            Console.Write(""+arr[i].dataIndex+" ");
         }
     }
 }
