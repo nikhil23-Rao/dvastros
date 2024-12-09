@@ -6,7 +6,26 @@ using System.IO;
 class Program {
     static void Main() {
         string[,] data = Data.GetData();
-        Data.PrintData(data);
+        //Console.WriteLine(data[0,1]);
+        Antenna a = Antenna.Create(Globals.WPSA, Globals.WPSA_RANGE, data.GetLength(0), data);
+        Antenna b = Antenna.Create(Globals.DS24, Globals.DS24_RANGE, data.GetLength(0), data);
+        Antenna c = Antenna.Create(Globals.DS34, Globals.DS34_RANGE, data.GetLength(0), data);
+        Antenna d = Antenna.Create(Globals.DS54, Globals.DS54_RANGE, data.GetLength(0), data);
+
+        //Antenna.PrintFloat(a.linkBudget);
+        for(int i=0;i<data.Length;i++) {
+            if(Antenna.Priority(a, b, c, d, i)==null) {
+                Console.Write(""+i+" ");
+                Console.WriteLine("No anntenna available");
+            } else {
+                Console.Write(""+i+" ");
+                Antenna.PrintPriority(Antenna.Priority(a, b, c, d, i));
+                Console.WriteLine();
+            }
+            //Console.WriteLine(data[i, Globals.WPSA_RANGE]);
+        }
+        //Data.PrintData(data);
+        
     }
 }
 
@@ -34,27 +53,27 @@ class Data {
         string filePath = "FY25 ADC HS Data Updated.csv";
         
         
-// if (File.Exists(filePath))
-// {
-//     Console.WriteLine("File found. Proceeding...");
-//     // Continue with file operations
-// }
-// else
-// {
-//     Console.WriteLine("File not found!");
-// }
+        if (File.Exists(filePath))
+        {
+            Console.WriteLine("File found. Proceeding...");
+            // Continue with file operations
+        }
+        else
+        {
+            Console.WriteLine("File not found!");
+        }
 
         string[] lines = File.ReadAllLines(filePath);
 
-        int rows = lines.Length;
+        int rows = lines.Length-1;
         int cols = lines[0].Split(',').Length;
 
         string[,] csvData = new string[rows, cols];
 
-        for(int i = 0; i < rows; i++) {
+        for(int i = 1; i < lines.Length; i++) {
             string[] columns = lines[i].Split(','); // Split the row into columns
             for(int j = 0; j < cols; j++) {
-                csvData[i, j] = columns[j]; // Assign to the 2D array
+                csvData[i-1, j] = columns[j]; // Assign to the 2D array
             }
         }
         return csvData;
@@ -71,31 +90,33 @@ class Data {
 }
 
 class Antenna {
-    int dataIndex;
-    int dataRange;
-    int diameter;
-    bool[] inRange;
-    float[] linkBudget;
+    public int dataIndex;
+    public int dataRange;
+    public int diameter;
+    public bool[] inRange;
+    public float[] linkBudget;
 
-    public Antenna Create(int index, int range, int dataSize, string[,] data) {
-        Antenna a = new Antenna();
-        a.dataIndex = index;
-        a.dataRange = range;
-        a.inRange = new bool[dataSize];
-        a.linkBudget = new float[dataSize];
+    public static Antenna Create(int index, int range, int dataSize, string[,] data) {
+        Antenna a = new Antenna {
+            dataIndex = index,
+            dataRange = range,
+            inRange = new bool[dataSize],
+            linkBudget = new float[dataSize]
+        };
 
-        if(index == Globals.DS24 || index == Globals.DS34 || index == Globals.DS54)
+        if (index == Globals.DS24 || index == Globals.DS34 || index == Globals.DS54)
             a.diameter = 34;
-        else if(index == Globals.WPSA)
+        else if (index == Globals.WPSA)
             a.diameter = 12;
         else
             a.diameter = -1;
 
-        Range(data);
-        LinkBudget(data, a);
+        a.Range(data);       
+        a.LinkBudget(data);  
 
         return a;
     }
+
 
     private void Range(string[,] data) {
         for(int i = 0; i < data.GetLength(0); i++){
@@ -106,31 +127,59 @@ class Antenna {
         } 
     }
 
-    private void LinkBudget(string[,] data, Antenna a) {
+    private void LinkBudget(string[,] data) {
         for(int i = 0; i < data.GetLength(0); i++){
-            linkBudget[i] = (float)((Math.Pow(10, 10+9-19.43+10*Math.Log10(0.55*Math.Pow(3.14*a.diameter/0.136363636,2)-20*Math.Log10(4000*3.14*float.Parse(data[i,a.dataRange])/0.136363636)+228.6-10*Math.Log10(22))))/1000);
+            if (float.TryParse(data[i, dataRange], out float range)) {
+                linkBudget[i] = (float)((Math.Pow(10, (10+9-19.43+10*Math.Log10(0.55*Math.Pow(Math.PI*diameter/0.136363636,2))-20*Math.Log10(4000*Math.PI*float.Parse(data[i,dataRange])/0.136363636)+228.6-10*Math.Log10(22))/10))/1000);
+
+                //linkBudget[i] = (float)((Math.Pow(10, (10+9-19.43+10*Math.Log10(0.55*Math.Pow(Math.PI*diameter/0.136363636,2)-20*Math.Log10(4000*Math.PI*float.Parse(data[i,dataRange])/0.136363636)+228.6-10*Math.Log10(22)))/10))/1000);
+            } else {
+                linkBudget[i] = float.MinValue;
+            }
         }
 
     }
 
     public static Antenna[] Priority(Antenna a, Antenna b, Antenna c, Antenna d, int index) {
-        Antenna[] priority = new Antenna[4];
-        priority[0] = a;
-        priority[1] = b;
-        priority[2] = c;
-        priority [3] = d;
+        Antenna[] arr = new Antenna[4];
+        arr[0] = a;
+        arr[1] = b;
+        arr[2] = c;
+        arr [3] = d;
 
         Antenna storage;
-        for(int i=0; i<3; i++) {
-            for(int j=0; j<3-i; j++) {
-                if(priority[j].linkBudget[index]<priority[j+1].linkBudget[index]) {
-                    storage = priority[j];
-                    priority[j] = priority[j+1];
-                    priority[j+1] = storage;
+        if(a.inRange[index] || b.inRange[index] || c.inRange[index] || d.inRange[index]) {
+            for(int i=0; i<3; i++) {
+                for(int j=0; j<3-i; j++) {
+                    if(arr[j].linkBudget[index]<arr[j+1].linkBudget[index]) {
+                        storage = arr[j];
+                        arr[j] = arr[j+1];
+                        arr[j+1] = storage;
+                    }
                 }
             }
+        } else {
+            return null;
         }
 
-        return priority;
+        return arr;
+    }
+
+    public static void PrintBool(bool[] arr) {
+        for(int i=0; i<arr.Length; i++) {
+            Console.WriteLine(""+i+" "+arr[i]);
+        }
+    }
+
+    public static void PrintFloat(float[] arr) {
+        for(int i=0; i<arr.Length; i++) {
+            Console.WriteLine(""+i+" "+arr[i]);
+        }
+    }
+
+    public static void PrintPriority(Antenna[] arr) {
+        for(int i=0; i<arr.Length; i++) {
+            Console.Write(""+arr[i].dataIndex+" ");
+        }
     }
 }
