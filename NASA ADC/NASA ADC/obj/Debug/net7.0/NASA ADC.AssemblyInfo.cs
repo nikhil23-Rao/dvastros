@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NASA ADC")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+235c12fb36152e93a6bd9093608a5aa7743e67a0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+18ead43aa4cf0a171db37213d55c8ae60c6a86e6")]
 [assembly: System.Reflection.AssemblyProductAttribute("NASA ADC")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NASA ADC")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
